@@ -3,12 +3,12 @@ from app.schemas import Intersection, Road, SignalState
 
 def build_intersections() -> dict[str, Intersection]:
     return {
-        "I1": Intersection(intersection_id="I1", x=12, y=20, connected_roads=[]),
-        "I2": Intersection(intersection_id="I2", x=42, y=16, connected_roads=[]),
-        "I3": Intersection(intersection_id="I3", x=74, y=22, connected_roads=[]),
-        "I4": Intersection(intersection_id="I4", x=16, y=70, connected_roads=[]),
-        "I5": Intersection(intersection_id="I5", x=47, y=62, connected_roads=[]),
-        "I6": Intersection(intersection_id="I6", x=81, y=67, connected_roads=[]),
+        "I1": Intersection(intersection_id="I1", x=18, y=22, connected_roads=[]),
+        "I2": Intersection(intersection_id="I2", x=50, y=22, connected_roads=[]),
+        "I3": Intersection(intersection_id="I3", x=82, y=22, connected_roads=[]),
+        "I4": Intersection(intersection_id="I4", x=18, y=66, connected_roads=[]),
+        "I5": Intersection(intersection_id="I5", x=50, y=66, connected_roads=[]),
+        "I6": Intersection(intersection_id="I6", x=82, y=66, connected_roads=[]),
     }
 
 
@@ -41,4 +41,3 @@ def road_coordinates(intersections: dict[str, Intersection], road: Road) -> tupl
     source = intersections[road.source_intersection]
     dest = intersections[road.destination_intersection]
     return (source.x, source.y), (dest.x, dest.y)
-

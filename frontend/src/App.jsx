@@ -7,6 +7,30 @@ import { NetworkMap } from './components/NetworkMap.jsx';
 import { IntelligencePanel, MetricsGrid, WhatIfPanel } from './components/Panels.jsx';
 import { LiveCharts } from './components/Charts.jsx';
 
+function ControlGuide({ mode }) {
+  return (
+    <section className="control-guide">
+      <div>
+        <b>Fixed</b>
+        <span>Every signal gets normal timing. Easy, but it can ignore real traffic.</span>
+      </div>
+      <div>
+        <b>Adaptive</b>
+        <span>CrowdFlow gives more green time where queues and waiting are high.</span>
+      </div>
+      <div>
+        <b>Start / Pause</b>
+        <span>Run or freeze the live traffic simulation.</span>
+      </div>
+      <div>
+        <b>Guided demo</b>
+        <span>Automatically shows congestion, adaptive control, fairness, and ambulance priority.</span>
+      </div>
+      <strong>{mode === 'ADAPTIVE' ? 'Current mode: CrowdFlow is deciding signal timing.' : 'Current mode: fixed signal timing is being used.'}</strong>
+    </section>
+  );
+}
+
 function ProblemResponse() {
   const pairs = [
     ['Fixed timing', 'Dynamic Green Time'],
@@ -73,15 +97,21 @@ export default function App() {
     <main className="app-shell">
       <TopBar status={state.status} onStart={crowd.start} onStop={crowd.stop} onReset={crowd.reset} onDemo={runDemo} onMode={crowd.setMode} />
       {crowd.error ? <div className="inline-error">{crowd.error}</div> : null}
+      <ControlGuide mode={state.status.mode} />
       <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
         <IntelligencePanel road={selected} decision={decision} />
       </motion.div>
       <MetricsGrid metrics={state.metrics} />
       <WhatIfPanel roads={state.roads} onAdjust={crowd.adjustTraffic} onEmergency={crowd.triggerEmergency} onExperiment={crowd.runExperiment} />
-      <LiveCharts history={state.history} comparison={crowd.comparison} />
-      <ProblemResponse />
+      <section className="details-section">
+        <div className="section-title">
+          <h2>Results And Project Story</h2>
+          <p>Use these after explaining the live map.</p>
+        </div>
+        <LiveCharts history={state.history} comparison={crowd.comparison} />
+        <ProblemResponse />
+      </section>
     </main>
   );
 }
-

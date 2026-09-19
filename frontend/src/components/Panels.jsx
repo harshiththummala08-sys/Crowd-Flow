@@ -1,16 +1,13 @@
-import { AlertTriangle, BarChart3, BrainCircuit, Gauge, Route, Siren, Timer, Zap } from 'lucide-react';
+import { AlertTriangle, Gauge, Route, Siren, Timer, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnimatedNumber } from './AnimatedNumber.jsx';
 
 export function MetricsGrid({ metrics }) {
   const cards = [
-    ['Vehicles', metrics.vehicles, '', 0, Gauge],
-    ['Avg Waiting', metrics.average_waiting_time, 's', 1, Timer],
-    ['Avg Queue', metrics.average_queue_length, '', 1, Route],
-    ['Avg Speed', metrics.average_speed, ' km/h', 1, Zap],
-    ['Congestion', metrics.congestion_score, '', 2, BarChart3],
-    ['Throughput', metrics.throughput, '', 1, BrainCircuit],
-    ['Max Wait', metrics.maximum_waiting_time, 's', 1, AlertTriangle],
+    ['Vehicles now', metrics.vehicles, '', 0, Gauge],
+    ['Average wait', metrics.average_waiting_time, 's', 1, Timer],
+    ['Queue size', metrics.average_queue_length, '', 1, Route],
+    ['Traffic speed', metrics.average_speed, ' km/h', 1, Zap],
   ];
   return (
     <div className="metric-grid">
@@ -26,6 +23,11 @@ export function MetricsGrid({ metrics }) {
         <span>Emergency</span>
         <strong>{metrics.emergency_status}</strong>
       </motion.div>
+      <motion.div className="metric-card">
+        <AlertTriangle size={18} />
+        <span>Longest wait</span>
+        <strong><AnimatedNumber value={metrics.maximum_waiting_time} suffix="s" decimals={1} /></strong>
+      </motion.div>
     </div>
   );
 }
@@ -34,32 +36,24 @@ export function IntelligencePanel({ road, decision }) {
   if (!road) return null;
   return (
     <motion.aside className="intel-panel" key={road.road_id} initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }}>
-      <div className="panel-kicker">Traffic Intelligence</div>
+      <div className="panel-kicker">Selected Road</div>
       <h2>{road.road_id} <span>{road.source_intersection} to {road.destination_intersection}</span></h2>
       <div className={`signal-badge ${road.signal_state.toLowerCase()}`}>{road.signal_state}</div>
-      <div className="stat-list">
-        <label>Vehicle Count <b>{road.vehicle_count.toFixed(0)}</b></label>
-        <label>Queue Length <b>{road.queue_length.toFixed(0)}</b></label>
-        <label>Waiting Time <b>{road.waiting_time.toFixed(0)}s</b></label>
-        <label>Average Speed <b>{road.average_speed.toFixed(1)} km/h</b></label>
-        <label>Capacity <b>{road.capacity}</b></label>
-        <label>Congestion <b>{road.congestion_level} {road.congestion_score.toFixed(2)}</b></label>
-        <label>Predicted Demand <b>{road.predicted_vehicle_count.toFixed(0)}</b></label>
-        <label>Recommended Green <b>{road.green_time}s</b></label>
-        <label>Fairness <b>{road.fairness_active ? 'ACTIVE' : 'Normal'}</b></label>
+      <div className="plain-summary">
+        <b>{road.signal_state.includes('GREEN') ? 'Traffic can move now.' : road.signal_state === 'YELLOW' ? 'Signal is changing.' : 'Traffic is waiting.'}</b>
+        <span>{road.vehicle_count.toFixed(0)} vehicles, {road.queue_length.toFixed(0)} queued, {road.congestion_level.toLowerCase()} congestion.</span>
       </div>
-      <div className="priority-stack">
-        {Object.entries(road.priority_components).map(([key, value]) => (
-          <div key={key}>
-            <span>{key}</span>
-            <i><em style={{ width: `${Math.min(100, Math.max(3, value * 100))}%` }} /></i>
-            <b>{value.toFixed(2)}</b>
-          </div>
-        ))}
+      <div className="stat-list">
+        <label>Vehicles <b>{road.vehicle_count.toFixed(0)}</b></label>
+        <label>Queue <b>{road.queue_length.toFixed(0)}</b></label>
+        <label>Wait <b>{road.waiting_time.toFixed(0)}s</b></label>
+        <label>Speed <b>{road.average_speed.toFixed(1)} km/h</b></label>
+        <label>Next green time <b>{road.green_time}s</b></label>
+        <label>Fairness <b>{road.fairness_active ? 'Active' : 'Normal'}</b></label>
       </div>
       <div className="why">
-        <h3>Why This Decision?</h3>
-        {decision?.explanation.map((line, index) => (
+        <h3>What is happening?</h3>
+        {decision?.explanation.slice(0, 3).map((line, index) => (
           <motion.p key={line} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.08 }}>{line}</motion.p>
         ))}
       </div>
@@ -71,21 +65,20 @@ export function WhatIfPanel({ roads, onAdjust, onEmergency, onExperiment }) {
   return (
     <section className="whatif">
       <div>
-        <h2>What-If Simulation</h2>
-        <p>Change traffic pressure and watch signals, queues, prediction, and priority respond.</p>
+        <h2>Try A Simple Scenario</h2>
+        <p>Add traffic, clear traffic, or trigger an ambulance route.</p>
       </div>
       <div className="whatif-grid">
-        {roads.slice(0, 6).map((road) => (
+        {roads.slice(0, 4).map((road) => (
           <div className="whatif-row" key={road.road_id}>
             <span>{road.road_id}</span>
-            <button onClick={() => onAdjust(road.road_id, -10)} aria-label={`Reduce traffic on ${road.road_id}`}>-</button>
-            <button onClick={() => onAdjust(road.road_id, 20)} aria-label={`Increase traffic on ${road.road_id}`}>+</button>
-            <button className="emergency-trigger" onClick={() => onEmergency(road.road_id)}>Emergency</button>
+            <button onClick={() => onAdjust(road.road_id, -10)} aria-label={`Reduce traffic on ${road.road_id}`}>Less</button>
+            <button onClick={() => onAdjust(road.road_id, 20)} aria-label={`Increase traffic on ${road.road_id}`}>More</button>
+            <button className="emergency-trigger" onClick={() => onEmergency(road.road_id)}>Ambulance</button>
           </div>
         ))}
       </div>
-      <button className="experiment-button" onClick={onExperiment}>Run Fixed vs Adaptive Experiment</button>
+      <button className="experiment-button" onClick={onExperiment}>Compare Fixed vs Adaptive</button>
     </section>
   );
 }
-
