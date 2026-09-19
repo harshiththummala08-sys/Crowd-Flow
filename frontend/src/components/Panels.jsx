@@ -1,33 +1,25 @@
-import { AlertTriangle, Gauge, Route, Siren, Timer, Zap } from 'lucide-react';
+import { AlertTriangle, Gauge, Route, Timer, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnimatedNumber } from './AnimatedNumber.jsx';
 
-export function MetricsGrid({ metrics }) {
+export function MetricsGrid({ metrics, status }) {
   const cards = [
-    ['Vehicles now', metrics.vehicles, '', 0, Gauge],
-    ['Average wait', metrics.average_waiting_time, 's', 1, Timer],
-    ['Queue size', metrics.average_queue_length, '', 1, Route],
-    ['Traffic speed', metrics.average_speed, ' km/h', 1, Zap],
+    ['Sim time', status?.simulation_time || 0, 's', 0, Timer],
+    ['Total vehicles', metrics.vehicles, '', 0, Gauge],
+    ['Total queue', metrics.average_queue_length, '', 1, Route],
+    ['Avg wait', metrics.average_waiting_time, 's', 1, Timer],
+    ['Avg speed', metrics.average_speed, ' km/h', 1, Zap],
+    ['Congestion', metrics.congestion_score * 100, '%', 0, AlertTriangle],
   ];
   return (
     <div className="metric-grid">
-      {cards.map(([label, value, suffix, decimals, Icon], index) => (
-        <motion.div className="metric-card" key={label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
+      {cards.map(([label, value, suffix, decimals, Icon]) => (
+        <div className="metric-card" key={label}>
           <Icon size={18} />
           <span>{label}</span>
           <strong><AnimatedNumber value={value} suffix={suffix} decimals={decimals} /></strong>
-        </motion.div>
+        </div>
       ))}
-      <motion.div className={`metric-card emergency-card ${metrics.emergency_status === 'ACTIVE' ? 'active' : ''}`}>
-        <Siren size={18} />
-        <span>Emergency</span>
-        <strong>{metrics.emergency_status}</strong>
-      </motion.div>
-      <motion.div className="metric-card">
-        <AlertTriangle size={18} />
-        <span>Longest wait</span>
-        <strong><AnimatedNumber value={metrics.maximum_waiting_time} suffix="s" decimals={1} /></strong>
-      </motion.div>
     </div>
   );
 }

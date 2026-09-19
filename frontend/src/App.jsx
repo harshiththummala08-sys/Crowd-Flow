@@ -6,6 +6,44 @@ import { TopBar } from './components/TopBar.jsx';
 import { NetworkMap } from './components/NetworkMap.jsx';
 import { IntelligencePanel, MetricsGrid, WhatIfPanel } from './components/Panels.jsx';
 import { LiveCharts } from './components/Charts.jsx';
+import { Activity, BarChart3, Brain, FlaskConical, GitBranch, LayoutDashboard, Route, ScrollText, Settings, Siren } from 'lucide-react';
+
+function Sidebar({ status }) {
+  const items = [
+    [LayoutDashboard, 'Dashboard', true],
+    [Route, 'Live Network'],
+    [Brain, 'AI Prediction'],
+    [GitBranch, 'Signal Optimizer'],
+    [Siren, 'Emergency Control'],
+    [FlaskConical, 'What-If Simulator'],
+    [BarChart3, 'Fixed vs Adaptive'],
+    [ScrollText, 'Decision Logs'],
+    [Settings, 'Settings'],
+  ];
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <div className="logo-mark"><Activity size={25} /></div>
+        <div>
+          <h1>CrowdFlow</h1>
+          <span>Traffic Optimizer</span>
+        </div>
+      </div>
+      <nav>
+        {items.map(([Icon, label, active]) => (
+          <a className={active ? 'active' : ''} href="#dashboard" key={label}>
+            <Icon size={18} />
+            <span>{label}</span>
+          </a>
+        ))}
+      </nav>
+      <div className="sidebar-state">
+        <p><i className={status?.running ? 'green' : ''} /> {status?.running ? 'Simulation Running' : 'Simulation Paused'}</p>
+        <p><i className="cyan" /> {status?.mode === 'ADAPTIVE' ? 'Adaptive Mode' : 'Fixed Mode'}</p>
+      </div>
+    </aside>
+  );
+}
 
 function ControlGuide({ mode }) {
   return (
@@ -94,23 +132,25 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
-      <TopBar status={state.status} onStart={crowd.start} onStop={crowd.stop} onReset={crowd.reset} onDemo={runDemo} onMode={crowd.setMode} />
-      {crowd.error ? <div className="inline-error">{crowd.error}</div> : null}
-      <ControlGuide mode={state.status.mode} />
-      <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
-        <IntelligencePanel road={selected} decision={decision} />
-      </motion.div>
-      <MetricsGrid metrics={state.metrics} />
-      <WhatIfPanel roads={state.roads} onAdjust={crowd.adjustTraffic} onEmergency={crowd.triggerEmergency} onExperiment={crowd.runExperiment} />
-      <section className="details-section">
-        <div className="section-title">
-          <h2>Results And Project Story</h2>
-          <p>Use these after explaining the live map.</p>
-        </div>
-        <LiveCharts history={state.history} comparison={crowd.comparison} />
-        <ProblemResponse />
+    <main className="app-frame">
+      <Sidebar status={state.status} />
+      <section className="app-shell" id="dashboard">
+        <TopBar status={state.status} onStart={crowd.start} onStop={crowd.stop} onReset={crowd.reset} onDemo={runDemo} onMode={crowd.setMode} />
+        {crowd.error ? <div className="inline-error">{crowd.error}</div> : null}
+        <MetricsGrid metrics={state.metrics} status={state.status} />
+        <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
+          <IntelligencePanel road={selected} decision={decision} />
+        </motion.div>
+        <WhatIfPanel roads={state.roads} onAdjust={crowd.adjustTraffic} onEmergency={crowd.triggerEmergency} onExperiment={crowd.runExperiment} />
+        <section className="details-section">
+          <div className="section-title">
+            <h2>Performance Metrics</h2>
+            <p>Simulation Result - live dashboard history</p>
+          </div>
+          <LiveCharts history={state.history} comparison={crowd.comparison} />
+          <ProblemResponse />
+        </section>
       </section>
     </main>
   );

@@ -88,9 +88,10 @@ export function NetworkMap({ state, selectedRoad, setSelectedRoad }) {
     <motion.section className="network-shell" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
       <div className="map-header">
         <div>
-          <h2>Live Traffic Network</h2>
-          <p>Click any road. Green roads are moving, yellow roads are slowing, red roads are waiting.</p>
+          <h2>Network Overview</h2>
+          <p>6 intersections - CrowdFlow Adaptive {state.status.running ? 'Running' : 'Paused'}</p>
         </div>
+        <span className="map-status">{state.status.running ? 'running' : 'paused'}</span>
         <div className="map-legend" aria-label="Map legend">
           <span><i className="legend-low" /> Moving</span>
           <span><i className="legend-medium" /> Busy</span>
