@@ -52,7 +52,7 @@ frontend/src/
 
 Frontend: React, Vite, Framer Motion, Lucide React, Recharts, Tailwind dependency included for styling compatibility.  
 Backend: Python, FastAPI, Pydantic, Uvicorn.  
-Data / ML: NumPy, pandas, scikit-learn dependencies included; baseline predictor is active by default.  
+Data / ML: NumPy, pandas, scikit-learn dependencies included; baseline predictor is active in the live prototype, and a full Colab-ready ML training workflow is included for model development and presentation metrics.  
 Simulation: Mock provider by default; SUMO adapter placeholder for later integration.
 
 ## Setup
@@ -97,7 +97,7 @@ pytest
 
 ## Dataset Preparation
 
-No external data is required for the demo prototype.
+No external data is required for the demo prototype. The optional ML notebook downloads the UCI Metro Interstate Traffic Volume dataset and falls back to deterministic demo data if the dataset host is unavailable.
 
 ```bash
 python scripts/download_data.py
@@ -105,6 +105,30 @@ python scripts/prepare_data.py
 ```
 
 Large raw datasets are intentionally excluded from Git. See `data/README.md` for source and license guidance.
+
+## ML Model And Colab
+
+The complete machine-learning workflow is in:
+
+- `ml/traffic_ml_pipeline.py` - reusable data cleaning, feature engineering, training, metrics, cross-validation, artifact saving, and prediction code
+- `ml/predict_example.py` - example of loading saved model artifacts and predicting next-hour traffic
+- `notebooks/CrowdFlow_ML_Model_Training.ipynb` - Colab notebook with charts, metrics, and PPT-ready outputs
+
+Open the notebook in Colab:
+
+```text
+https://colab.research.google.com/github/harshiththummala08-sys/Crowd-Flow/blob/main/notebooks/CrowdFlow_ML_Model_Training.ipynb
+```
+
+The notebook covers cleaning, preprocessing, feature engineering, Linear Regression, SGD gradient-descent models, Logistic Regression, Random Forest, Gradient Boosting, MAE, RMSE, R2, MAPE, accuracy, precision, recall, F1, ROC-AUC, PR-AUC, confusion matrix, and cross-validation.
+
+Run the ML pipeline locally:
+
+```bash
+python -m pip install -r backend/requirements.txt
+python ml/traffic_ml_pipeline.py
+python ml/predict_example.py
+```
 
 ## Demo Flow
 

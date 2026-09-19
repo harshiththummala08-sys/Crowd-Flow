@@ -18,4 +18,5 @@ results/*.json
 backend/results/*.csv
 backend/results/*.json
 !results/.gitkeep
+artifacts/
 npm-debug.log*
