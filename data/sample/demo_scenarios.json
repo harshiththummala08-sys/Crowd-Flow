@@ -1,0 +1,9 @@
+{
+  "normal_traffic": { "R1": 32, "R2": 46, "R3": 35, "R4": 28 },
+  "rush_hour": { "R2": 72, "R6": 82, "R10": 61 },
+  "r2_congestion": { "R2": 95 },
+  "fairness_stress": { "R3": 88, "waiting_time": 130 },
+  "emergency_r4": { "emergency_road": "R4" },
+  "combined_stress": { "R2": 100, "R3": 85, "R4": 62, "emergency_road": "R4" }
+}
+
