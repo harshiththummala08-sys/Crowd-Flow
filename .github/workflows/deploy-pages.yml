@@ -32,6 +32,9 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
       - name: Build
         working-directory: frontend
         run: npm run build
