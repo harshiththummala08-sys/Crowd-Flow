@@ -46,7 +46,7 @@ button { border: 0; cursor: pointer; font: inherit; }
 .mode-toggle .adaptive { background: rgba(38,166,154,.25); color: #b7fff6; }
 
 .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; margin-top: 18px; }
-.network-shell, .intel-panel, .whatif, .chart-card, .problem-response, .metric-card, .details-section { border: 1px solid rgba(255,255,255,.08); background: #10151e; border-radius: 8px; box-shadow: 0 18px 58px rgba(0,0,0,.2); }
+.network-shell, .intel-panel, .whatif, .chart-card, .problem-response, .metric-card, .details-section, .guide-panel { border: 1px solid rgba(255,255,255,.08); background: #10151e; border-radius: 8px; box-shadow: 0 18px 58px rgba(0,0,0,.2); }
 .network-shell { padding: 0; min-height: 540px; overflow: hidden; }
 .map-header { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 8px; }
 h2, h3, p { margin: 0; }
@@ -133,6 +133,11 @@ h2, h3, p { margin: 0; }
 .problem-response div { padding: 12px; background: rgba(255,255,255,.04); border-radius: 7px; }
 .problem-response span { display: block; color: #8396aa; font-size: 12px; }
 .problem-response b { display: block; margin-top: 6px; color: #effbff; font-size: 13px; }
+.guide-panel { margin-top: 18px; padding: 16px; }
+.guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.guide-grid div { padding: 12px; border-radius: 7px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); }
+.guide-grid b { display: block; color: #b7fff6; font-size: 13px; }
+.guide-grid span { display: block; margin-top: 6px; color: #aab7c6; font-size: 13px; line-height: 1.4; }
 .boot-screen { min-height: 100vh; display: grid; place-content: center; text-align: center; gap: 14px; }
 .loader { width: 54px; height: 54px; justify-self: center; border-radius: 50%; border: 3px solid rgba(81,245,236,.18); border-top-color: #51f5ec; animation: spin 1s linear infinite; }
 .inline-error { margin-top: 14px; color: #ffb1bb; }
@@ -160,6 +165,9 @@ h2, h3, p { margin: 0; }
 .log-list button { display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; }
 .system-note { padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 8px; background: #10151e; }
 .system-note p { margin-top: 8px; color: #9ca3af; }
+.settings-grid button { display: grid; gap: 6px; }
+.settings-grid b { color: #f7fbff; font-size: 14px; }
+.settings-grid span { color: #9ca3af; font-size: 13px; line-height: 1.4; }
 
 @keyframes pulseRoad { 50% { opacity: .62; } }
 @keyframes dash { to { stroke-dashoffset: -10; } }
@@ -171,7 +179,7 @@ h2, h3, p { margin: 0; }
   .topbar { align-items: flex-start; flex-direction: column; }
   .dashboard-grid, .charts { grid-template-columns: 1fr; }
   .metric-grid { grid-template-columns: repeat(3, 1fr); }
-  .insight-grid, .decision-list, .emergency-grid, .settings-grid, .road-table { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .insight-grid, .decision-list, .emergency-grid, .settings-grid, .road-table, .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .whatif { grid-template-columns: 1fr; }
   .problem-response { grid-template-columns: repeat(3, 1fr); }
 }

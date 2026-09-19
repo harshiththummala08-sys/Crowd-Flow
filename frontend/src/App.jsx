@@ -72,6 +72,38 @@ function ProblemResponse() {
   );
 }
 
+const guideItems = [
+  ['Fixed timing', 'Runs signals on a preset cycle. It is the baseline used for comparison.'],
+  ['Adaptive timing', 'CrowdFlow changes green time using queue, wait, prediction, fairness, and emergency priority.'],
+  ['Start live', 'Begins the live traffic simulation so vehicles, queues, and metrics keep changing.'],
+  ['Pause', 'Freezes the current state for explanation or judging questions.'],
+  ['Reset', 'Returns all roads to the clean starting scenario.'],
+  ['Guided demo', 'Auto-runs a judge-friendly story: fixed mode, congestion, adaptive recovery, emergency, and comparison.'],
+  ['What-If', 'Adds/removes traffic or creates an ambulance event on selected roads.'],
+  ['Fixed vs Adaptive', 'Runs both approaches on the same rush-hour scenario and charts the result.'],
+  ['Decision Logs', 'Shows why the optimizer selected or held each road.'],
+];
+
+function PrototypeGuide({ compact = false }) {
+  const visibleItems = compact ? guideItems.slice(0, 6) : guideItems;
+  return (
+    <section className="guide-panel">
+      <div className="section-title">
+        <h2>Prototype Guide</h2>
+        <p>Quick meaning of every main option</p>
+      </div>
+      <div className="guide-grid">
+        {visibleItems.map(([title, detail]) => (
+          <div key={title}>
+            <b>{title}</b>
+            <span>{detail}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RoadTable({ roads, onSelect }) {
   return (
     <div className="road-table">
@@ -138,6 +170,7 @@ export default function App() {
     dashboard: (
       <>
         <MetricsGrid metrics={state.metrics} status={state.status} />
+        <PrototypeGuide compact />
         <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
           <IntelligencePanel road={selected} decision={decision} />
@@ -232,12 +265,32 @@ export default function App() {
       <section className="page-panel">
         <ViewHeader title="Settings" subtitle="Presentation-safe controls for the Round 3 demo." />
         <div className="settings-grid">
-          <button onClick={() => crowd.setMode('FIXED')}>Use fixed timing</button>
-          <button onClick={() => crowd.setMode('ADAPTIVE')}>Use adaptive timing</button>
-          <button onClick={crowd.start}>Start simulation</button>
-          <button onClick={crowd.stop}>Pause simulation</button>
-          <button onClick={crowd.reset}>Reset clean scenario</button>
+          <button onClick={() => crowd.setMode('FIXED')}>
+            <b>Use fixed timing</b>
+            <span>Normal signal cycle. Best for showing the baseline problem.</span>
+          </button>
+          <button onClick={() => crowd.setMode('ADAPTIVE')}>
+            <b>Use adaptive timing</b>
+            <span>AI priority changes green time based on live road pressure.</span>
+          </button>
+          <button onClick={crowd.start}>
+            <b>Start simulation</b>
+            <span>Traffic begins moving and metrics update automatically.</span>
+          </button>
+          <button onClick={crowd.stop}>
+            <b>Pause simulation</b>
+            <span>Freezes the network so you can explain the current decision.</span>
+          </button>
+          <button onClick={crowd.reset}>
+            <b>Reset clean scenario</b>
+            <span>Clears experiments and returns to the starting traffic state.</span>
+          </button>
+          <button onClick={runDemo}>
+            <b>Run guided demo</b>
+            <span>Shows congestion, adaptive recovery, emergency control, and comparison.</span>
+          </button>
         </div>
+        <PrototypeGuide />
         <div className="system-note">
           <b>System status</b>
           <p>{state.status.provider} provider, {state.status.prediction_source} prediction, {highCongestion.length} highly congested roads.</p>
