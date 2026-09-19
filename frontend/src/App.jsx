@@ -8,17 +8,17 @@ import { IntelligencePanel, MetricsGrid, WhatIfPanel } from './components/Panels
 import { LiveCharts } from './components/Charts.jsx';
 import { Activity, BarChart3, Brain, FlaskConical, GitBranch, LayoutDashboard, Route, ScrollText, Settings, Siren } from 'lucide-react';
 
-function Sidebar({ status }) {
+function Sidebar({ status, activeView, setActiveView }) {
   const items = [
-    [LayoutDashboard, 'Dashboard', true],
-    [Route, 'Live Network'],
-    [Brain, 'AI Prediction'],
-    [GitBranch, 'Signal Optimizer'],
-    [Siren, 'Emergency Control'],
-    [FlaskConical, 'What-If Simulator'],
-    [BarChart3, 'Fixed vs Adaptive'],
-    [ScrollText, 'Decision Logs'],
-    [Settings, 'Settings'],
+    ['dashboard', LayoutDashboard, 'Dashboard'],
+    ['network', Route, 'Live Network'],
+    ['prediction', Brain, 'AI Prediction'],
+    ['optimizer', GitBranch, 'Signal Optimizer'],
+    ['emergency', Siren, 'Emergency Control'],
+    ['whatif', FlaskConical, 'What-If Simulator'],
+    ['evaluation', BarChart3, 'Fixed vs Adaptive'],
+    ['logs', ScrollText, 'Decision Logs'],
+    ['settings', Settings, 'Settings'],
   ];
   return (
     <aside className="sidebar">
@@ -30,11 +30,11 @@ function Sidebar({ status }) {
         </div>
       </div>
       <nav>
-        {items.map(([Icon, label, active]) => (
-          <a className={active ? 'active' : ''} href="#dashboard" key={label}>
+        {items.map(([id, Icon, label]) => (
+          <button className={activeView === id ? 'active' : ''} key={id} onClick={() => setActiveView(id)}>
             <Icon size={18} />
             <span>{label}</span>
-          </a>
+          </button>
         ))}
       </nav>
       <div className="sidebar-state">
@@ -45,27 +45,12 @@ function Sidebar({ status }) {
   );
 }
 
-function ControlGuide({ mode }) {
+function ViewHeader({ title, subtitle }) {
   return (
-    <section className="control-guide">
-      <div>
-        <b>Fixed</b>
-        <span>Every signal gets normal timing. Easy, but it can ignore real traffic.</span>
-      </div>
-      <div>
-        <b>Adaptive</b>
-        <span>CrowdFlow gives more green time where queues and waiting are high.</span>
-      </div>
-      <div>
-        <b>Start / Pause</b>
-        <span>Run or freeze the live traffic simulation.</span>
-      </div>
-      <div>
-        <b>Guided demo</b>
-        <span>Automatically shows congestion, adaptive control, fairness, and ambulance priority.</span>
-      </div>
-      <strong>{mode === 'ADAPTIVE' ? 'Current mode: CrowdFlow is deciding signal timing.' : 'Current mode: fixed signal timing is being used.'}</strong>
-    </section>
+    <div className="view-header">
+      <h2>{title}</h2>
+      <p>{subtitle}</p>
+    </div>
   );
 }
 
@@ -87,9 +72,25 @@ function ProblemResponse() {
   );
 }
 
+function RoadTable({ roads, onSelect }) {
+  return (
+    <div className="road-table">
+      {roads.map((road) => (
+        <button key={road.road_id} onClick={() => onSelect(road.road_id)}>
+          <b>{road.road_id}</b>
+          <span>{road.source_intersection} to {road.destination_intersection}</span>
+          <em className={road.congestion_level.toLowerCase()}>{road.congestion_level}</em>
+          <strong>{road.vehicle_count.toFixed(0)} vehicles</strong>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const crowd = useCrowdFlow();
   const [selectedRoad, setSelectedRoad] = useState('R2');
+  const [activeView, setActiveView] = useState('dashboard');
   const state = crowd.state;
 
   useEffect(() => {
@@ -100,6 +101,8 @@ export default function App() {
 
   const selected = useMemo(() => state?.roads.find((road) => road.road_id === selectedRoad), [state, selectedRoad]);
   const decision = useMemo(() => state?.decisions.find((item) => item.road_id === selectedRoad), [state, selectedRoad]);
+  const topRoads = useMemo(() => [...(state?.roads || [])].sort((a, b) => b.priority_score - a.priority_score).slice(0, 5), [state]);
+  const highCongestion = useMemo(() => (state?.roads || []).filter((road) => road.congestion_level === 'HIGH'), [state]);
 
   async function runDemo() {
     await crowd.reset();
@@ -131,26 +134,135 @@ export default function App() {
     return <main className="boot-screen"><div className="loader" /><h1>Starting CrowdFlow command center</h1></main>;
   }
 
-  return (
-    <main className="app-frame">
-      <Sidebar status={state.status} />
-      <section className="app-shell" id="dashboard">
-        <TopBar status={state.status} onStart={crowd.start} onStop={crowd.stop} onReset={crowd.reset} onDemo={runDemo} onMode={crowd.setMode} />
-        {crowd.error ? <div className="inline-error">{crowd.error}</div> : null}
+  const views = {
+    dashboard: (
+      <>
         <MetricsGrid metrics={state.metrics} status={state.status} />
         <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
           <IntelligencePanel road={selected} decision={decision} />
         </motion.div>
+      </>
+    ),
+    network: (
+      <>
+        <ViewHeader title="Live Network" subtitle="Rectangular road grid with live vehicles, signals, queues, and road selection." />
+        <motion.div className="dashboard-grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <NetworkMap state={state} selectedRoad={selectedRoad} setSelectedRoad={setSelectedRoad} />
+          <IntelligencePanel road={selected} decision={decision} />
+        </motion.div>
+        <RoadTable roads={state.roads} onSelect={setSelectedRoad} />
+      </>
+    ),
+    prediction: (
+      <section className="page-panel">
+        <ViewHeader title="AI Prediction" subtitle={`Prediction source: ${state.status.prediction_source}. Higher predicted demand increases priority.`} />
+        <div className="insight-grid">
+          {state.roads.map((road) => (
+            <button className="insight-card" key={road.road_id} onClick={() => { setSelectedRoad(road.road_id); setActiveView('network'); }}>
+              <span>{road.road_id}</span>
+              <strong>{road.predicted_vehicle_count.toFixed(0)} predicted vehicles</strong>
+              <p>{road.congestion_level} congestion now, {road.queue_length.toFixed(0)} queued.</p>
+            </button>
+          ))}
+        </div>
+      </section>
+    ),
+    optimizer: (
+      <section className="page-panel">
+        <ViewHeader title="Signal Optimizer" subtitle="Roads are ranked by priority, then green time is assigned within safe limits." />
+        <div className="decision-list">
+          {topRoads.map((road) => (
+            <button className="decision-card" key={road.road_id} onClick={() => { setSelectedRoad(road.road_id); setActiveView('network'); }}>
+              <b>{road.road_id}</b>
+              <span>Priority {road.priority_score.toFixed(2)}</span>
+              <span>Green {road.green_time}s</span>
+              <em>{road.signal_state}</em>
+            </button>
+          ))}
+        </div>
+        <button className="experiment-button" onClick={crowd.tick}>Run one optimizer tick</button>
+      </section>
+    ),
+    emergency: (
+      <section className="page-panel">
+        <ViewHeader title="Emergency Control" subtitle="Trigger an ambulance route and watch safe transition to emergency green." />
+        <div className="emergency-grid">
+          {state.roads.slice(0, 6).map((road) => (
+            <button key={road.road_id} onClick={() => { setSelectedRoad(road.road_id); crowd.triggerEmergency(road.road_id); }}>
+              <b>Ambulance on {road.road_id}</b>
+              <span>{road.source_intersection} to {road.destination_intersection}</span>
+            </button>
+          ))}
+        </div>
+        <IntelligencePanel road={selected} decision={decision} />
+      </section>
+    ),
+    whatif: (
+      <>
+        <ViewHeader title="What-If Simulator" subtitle="Add or reduce traffic on key roads and see the optimizer respond." />
         <WhatIfPanel roads={state.roads} onAdjust={crowd.adjustTraffic} onEmergency={crowd.triggerEmergency} onExperiment={crowd.runExperiment} />
-        <section className="details-section">
-          <div className="section-title">
-            <h2>Performance Metrics</h2>
-            <p>Simulation Result - live dashboard history</p>
-          </div>
-          <LiveCharts history={state.history} comparison={crowd.comparison} />
-          <ProblemResponse />
-        </section>
+        <RoadTable roads={state.roads.slice(0, 8)} onSelect={setSelectedRoad} />
+      </>
+    ),
+    evaluation: (
+      <section className="details-section standalone">
+        <div className="section-title">
+          <h2>Fixed vs Adaptive</h2>
+          <p>Run both modes on the same simulated rush-hour scenario.</p>
+        </div>
+        <button className="experiment-button" onClick={crowd.runExperiment}>Run comparison</button>
+        <LiveCharts history={state.history} comparison={crowd.comparison} />
+      </section>
+    ),
+    logs: (
+      <section className="page-panel">
+        <ViewHeader title="Decision Logs" subtitle="Latest explainable optimizer decisions from live simulation state." />
+        <div className="log-list">
+          {state.decisions.slice(0, 8).map((item) => (
+            <button key={item.road_id} onClick={() => { setSelectedRoad(item.road_id); setActiveView('network'); }}>
+              <b>{item.road_id}</b>
+              <span>{item.explanation[0]}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    ),
+    settings: (
+      <section className="page-panel">
+        <ViewHeader title="Settings" subtitle="Presentation-safe controls for the Round 3 demo." />
+        <div className="settings-grid">
+          <button onClick={() => crowd.setMode('FIXED')}>Use fixed timing</button>
+          <button onClick={() => crowd.setMode('ADAPTIVE')}>Use adaptive timing</button>
+          <button onClick={crowd.start}>Start simulation</button>
+          <button onClick={crowd.stop}>Pause simulation</button>
+          <button onClick={crowd.reset}>Reset clean scenario</button>
+        </div>
+        <div className="system-note">
+          <b>System status</b>
+          <p>{state.status.provider} provider, {state.status.prediction_source} prediction, {highCongestion.length} highly congested roads.</p>
+        </div>
+      </section>
+    ),
+  };
+
+  return (
+    <main className="app-frame">
+      <Sidebar status={state.status} activeView={activeView} setActiveView={setActiveView} />
+      <section className="app-shell" id="dashboard">
+        <TopBar status={state.status} onStart={crowd.start} onStop={crowd.stop} onReset={crowd.reset} onDemo={runDemo} onMode={crowd.setMode} />
+        {crowd.error ? <div className="inline-error">{crowd.error}</div> : null}
+        {views[activeView]}
+        {activeView === 'dashboard' ? (
+          <section className="details-section">
+            <div className="section-title">
+              <h2>Performance Metrics</h2>
+              <p>Simulation Result - live dashboard history</p>
+            </div>
+            <LiveCharts history={state.history} comparison={crowd.comparison} />
+            <ProblemResponse />
+          </section>
+        ) : null}
       </section>
     </main>
   );
